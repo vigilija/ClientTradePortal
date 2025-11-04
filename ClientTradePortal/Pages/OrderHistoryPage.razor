@@ -1,0 +1,340 @@
+﻿@page "/orders"
+@using ClientTradePortal.Models.DTO
+@using Fluxor
+@using ClientTradePortal.Store.Account
+@using ClientTradePortal.Store.Trading
+@using MudBlazor
+@inherits Fluxor.Blazor.Web.Components.FluxorComponent
+
+@inject IState<AccountState> AccountState
+@inject IState<TradingState> TradingState
+@inject IDispatcher Dispatcher
+
+<PageTitle>Order History - Van Lanschot</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudText Typo="Typo.h4" Class="mb-4">
+        <MudIcon Icon="@Icons.Material.Filled.Receipt" Class="mr-2" />
+        Order History
+    </MudText>
+
+    <MudGrid>
+        @* Summary Cards *@
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                    <div>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Total Orders</MudText>
+                        <MudText Typo="Typo.h4">@TradingState.Value.OrderHistory.Count</MudText>
+                    </div>
+                    <MudIcon Icon="@Icons.Material.Filled.ShoppingCart" Size="Size.Large" Color="Color.Primary" />
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                    <div>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Executed</MudText>
+                        <MudText Typo="Typo.h4">@GetExecutedOrdersCount()</MudText>
+                    </div>
+                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Large" Color="Color.Success" />
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                    <div>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Total Spent</MudText>
+                        <MudText Typo="Typo.h4">€@GetTotalSpent().ToString("N2")</MudText>
+                    </div>
+                    <MudIcon Icon="@Icons.Material.Filled.Euro" Size="Size.Large" Color="Color.Info" />
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                    <div>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Avg. Order Size</MudText>
+                        <MudText Typo="Typo.h4">€@GetAverageOrderSize().ToString("N0")</MudText>
+                    </div>
+                    <MudIcon Icon="@Icons.Material.Filled.Analytics" Size="Size.Large" Color="Color.Secondary" />
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+
+        @* Orders Table *@
+        <MudItem xs="12">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+                    <MudText Typo="Typo.h6">
+                        <MudIcon Icon="@Icons.Material.Filled.History" Class="mr-2" />
+                        Recent Orders
+                    </MudText>
+                    <MudButton StartIcon="@Icons.Material.Filled.Refresh" 
+                               Color="Color.Primary" 
+                               Variant="Variant.Outlined"
+                               OnClick="@LoadOrders">
+                        Refresh
+                    </MudButton>
+                </MudStack>
+
+                @if (TradingState.Value.OrderHistory.Count == 0)
+                {
+                    <MudAlert Severity="Severity.Info" Icon="@Icons.Material.Filled.Info">
+                        No orders found. Start trading to see your order history here!
+                    </MudAlert>
+                }
+                else
+                {
+                    <MudTable Items="@TradingState.Value.OrderHistory.OrderByDescending(o => o.CreatedAt)" 
+                              Hover="true" 
+                              Breakpoint="Breakpoint.Sm"
+                              Loading="@_isLoading"
+                              Dense="true">
+                        <HeaderContent>
+                            <MudTh>Order ID</MudTh>
+                            <MudTh>Date</MudTh>
+                            <MudTh>Symbol</MudTh>
+                            <MudTh>Type</MudTh>
+                            <MudTh Class="text-right">Quantity</MudTh>
+                            <MudTh Class="text-right">Price</MudTh>
+                            <MudTh Class="text-right">Total</MudTh>
+                            <MudTh>Status</MudTh>
+                            <MudTh>Actions</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Order ID">
+                                <MudText Typo="Typo.body2" Style="font-family: monospace;">
+                                    @context.OrderId.ToString()[..8]...
+                                </MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Date">
+                                <MudText Typo="Typo.body2">
+                                    @context.CreatedAt.ToString("MMM dd, yyyy")
+                                </MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                    @context.CreatedAt.ToString("HH:mm:ss")
+                                </MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Symbol">
+                                <MudChip T="string"  Size="Size.Small" Color="Color.Primary">@context.Symbol</MudChip>
+                            </MudTd>
+                            <MudTd DataLabel="Type">
+                                <MudChip T="string" Size="Size.Small"
+                                         Color="@(context.OrderType == OrderType.Buy.ToString() ? Color.Success : Color.Error)">
+                                    @context.OrderType
+                                </MudChip>
+                            </MudTd>
+                            <MudTd DataLabel="Quantity" Class="text-right">
+                                <MudText Typo="Typo.body2">@context.Quantity</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Price" Class="text-right">
+                                <MudText Typo="Typo.body2">€@context.PricePerShare.ToString("N2")</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Total" Class="text-right">
+                                <MudText Typo="Typo.body2" Class="font-weight-bold">
+                                    €@context.TotalAmount.ToString("N2")
+                                </MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Status">
+                                <MudChip T="string" Size="Size.Small"
+                                         Color="@GetStatusColor(context.Status)"
+                                         Icon="@GetStatusIcon(context.Status)">
+                                    @context.Status
+                                </MudChip>
+                            </MudTd>
+                            <MudTd DataLabel="Actions">
+                                <MudIconButton Icon="@Icons.Material.Filled.Visibility" 
+                                               Size="Size.Small" 
+                                               Color="Color.Primary"
+                                               OnClick="@(() => ShowOrderDetails(context))" />
+                            </MudTd>
+                        </RowTemplate>
+                        <PagerContent>
+                            <MudTablePager PageSizeOptions="new int[]{10, 25, 50, 100}" />
+                        </PagerContent>
+                    </MudTable>
+                }
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    @* Order Details Dialog *@
+    <MudDialog @bind-IsVisible="@_showOrderDetails" Options="@_dialogOptions">
+        <TitleContent>
+            <MudText Typo="Typo.h6">
+                <MudIcon Icon="@Icons.Material.Filled.Receipt" Class="mr-2" />
+                Order Details
+            </MudText>
+        </TitleContent>
+        <DialogContent>
+            @if (_selectedOrder != null)
+            {
+                <MudGrid>
+                    <MudItem xs="12">
+                        <MudPaper Class="pa-3" Elevation="0" Style="background-color: var(--mud-palette-background-grey)">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Order ID</MudText>
+                            <MudText Typo="Typo.body1" Style="font-family: monospace;">
+                                @_selectedOrder.OrderId
+                            </MudText>
+                        </MudPaper>
+                    </MudItem>
+
+                    <MudItem xs="6">
+                        <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Symbol</MudText>
+                        <MudText Typo="Typo.h6">@_selectedOrder.Symbol</MudText>
+                    </MudItem>
+
+                    <MudItem xs="6">
+                        <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Order Type</MudText>
+                        <MudChip T="string" Color="@(_selectedOrder.OrderType == OrderType.Buy.ToString() ? Color.Success : Color.Error)">
+                            @_selectedOrder.OrderType
+                        </MudChip>
+                    </MudItem>
+
+                    <MudItem xs="6">
+                        <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Quantity</MudText>
+                        <MudText Typo="Typo.h6">@_selectedOrder.Quantity shares</MudText>
+                    </MudItem>
+
+                    <MudItem xs="6">
+                        <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Price per Share</MudText>
+                        <MudText Typo="Typo.h6">€@_selectedOrder.PricePerShare.ToString("N2")</MudText>
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <MudDivider />
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Total Amount</MudText>
+                        <MudText Typo="Typo.h4" Color="Color.Primary">
+                            €@_selectedOrder.TotalAmount.ToString("N2")
+                        </MudText>
+                    </MudItem>
+
+                    <MudItem xs="6">
+                        <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Created At</MudText>
+                        <MudText Typo="Typo.body1">@_selectedOrder.CreatedAt.ToString("g")</MudText>
+                    </MudItem>
+
+                    <MudItem xs="6">
+                        <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Executed At</MudText>
+                        <MudText Typo="Typo.body1">
+                            @(_selectedOrder.ExecutedAt?.ToString("g") ?? "N/A")
+                        </MudText>
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Status</MudText>
+                        <MudChip T="string"  Color="@GetStatusColor(_selectedOrder.Status)"
+                                 Icon="@GetStatusIcon(_selectedOrder.Status)"
+                                 Size="Size.Large">
+                            @_selectedOrder.Status
+                        </MudChip>
+                    </MudItem>
+
+                    @if (!string.IsNullOrEmpty(_selectedOrder.ErrorMessage))
+                    {
+                        <MudItem xs="12">
+                            <MudAlert Severity="Severity.Error">
+                                <strong>Error:</strong> @_selectedOrder.ErrorMessage
+                            </MudAlert>
+                        </MudItem>
+                    }
+                </MudGrid>
+            }
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="@CloseOrderDetails">Close</MudButton>
+        </DialogActions>
+    </MudDialog>
+</MudContainer>
+
+@code {
+    private bool _isLoading = false;
+    private bool _showOrderDetails = false;
+    private OrderResponse? _selectedOrder;
+    private Guid _accountId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+
+    private DialogOptions _dialogOptions = new() 
+    { 
+        MaxWidth = MaxWidth.Medium, 
+        FullWidth = true 
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await LoadOrders();
+    }
+
+    private async Task LoadOrders()
+    {
+        _isLoading = true;
+        Dispatcher.Dispatch(new LoadOrderHistoryAction(_accountId));
+        await Task.Delay(500); // Simulate loading
+        _isLoading = false;
+    }
+
+    private void ShowOrderDetails(OrderResponse order)
+    {
+        _selectedOrder = order;
+        _showOrderDetails = true;
+    }
+
+    private void CloseOrderDetails()
+    {
+        _showOrderDetails = false;
+        _selectedOrder = null;
+    }
+
+    private int GetExecutedOrdersCount()
+    {
+        return TradingState.Value.OrderHistory
+            .Count(o => o.Status == OrderStatus.Executed.ToString());
+    }
+
+    private decimal GetTotalSpent()
+    {
+        return TradingState.Value.OrderHistory
+            .Where(o => o.Status == OrderStatus.Executed.ToString() && o.OrderType == OrderType.Buy.ToString())
+            .Sum(o => o.TotalAmount);
+    }
+
+    private decimal GetAverageOrderSize()
+    {
+        var orders = TradingState.Value.OrderHistory.Where(o => o.Status == OrderStatus.Executed.ToString()).ToList();
+        return orders.Count > 0 ? orders.Average(o => o.TotalAmount) : 0;
+    }
+
+    private Color GetStatusColor(string status)
+    {
+        return status switch
+        {
+            "Executed" => Color.Success,
+            "Pending" => Color.Warning,
+            "Failed" => Color.Error,
+            "Cancelled" => Color.Default,
+            _ => Color.Default
+        };
+    }
+
+    private string GetStatusIcon(string status)
+    {
+        return status switch
+        {
+            "Executed" => Icons.Material.Filled.CheckCircle,
+            "Pending" => Icons.Material.Filled.Schedule,
+            "Failed" => Icons.Material.Filled.Error,
+            "Cancelled" => Icons.Material.Filled.Cancel,
+            _ => Icons.Material.Filled.HelpOutline
+        };
+    }
+}

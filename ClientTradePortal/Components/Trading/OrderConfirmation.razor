@@ -1,0 +1,53 @@
+﻿@using ClientTradePortal.Models.ViewModels
+@using MudBlazor
+```razor
+@* Components/Trading/OrderConfirmation.razor *@
+<MudDialog @bind-IsVisible="@IsOpen" Options="@_dialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Class="mr-2" Color="Color.Success" />
+            Confirm Your Order
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+<Component />    </DialogContent>
+    <DialogActions>
+        <MudButton 
+            OnClick="@OnCancelInternal" 
+            Variant="Variant.Text"
+            StartIcon="@Icons.Material.Filled.Cancel">
+            Cancel
+        </MudButton>
+        <MudButton 
+            Color="Color.Primary" 
+            Variant="Variant.Filled" 
+            OnClick="@OnConfirmInternal"
+            StartIcon="@Icons.Material.Filled.Check">
+            Confirm Purchase
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public OrderSummaryViewModel? OrderSummary { get; set; }
+    [Parameter] public EventCallback OnConfirm { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private DialogOptions _dialogOptions = new() 
+    { 
+        MaxWidth = MaxWidth.Small, 
+        FullWidth = true,
+        CloseOnEscapeKey = true
+    };
+
+    private async Task OnConfirmInternal()
+    {
+        await OnConfirm.InvokeAsync();
+    }
+
+    private async Task OnCancelInternal()
+    {
+        await OnCancel.InvokeAsync();
+    }
+}

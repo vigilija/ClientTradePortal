@@ -1,0 +1,18 @@
+﻿@using MudBlazor
+@* Components/Shared/LoadingSpinner.razor *@
+<MudPaper Class="pa-4 d-flex justify-center align-center" Elevation="3" Style="min-height: 200px;">
+    <MudStack AlignItems="AlignItems.Center" Spacing="3">
+        <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+        @if (!string.IsNullOrEmpty(Message))
+        {
+            <MudText Typo="Typo.body1" Color="Color.Secondary">@Message</MudText>
+        }
+    </MudStack>
+</MudPaper>
+
+@code {
+    [Parameter] public string? Message { get; set; }
+}
+```
+
+```razor

@@ -1,0 +1,277 @@
+﻿@page "/trade"
+@using Fluxor
+@using ClientTradePortal.Store.Account
+<Component />@using MudBlazor
+@inherits Fluxor.Blazor.Web.Components.FluxorComponent
+
+@inject IState<AccountState> AccountState
+@inject IState<TradingState> TradingState
+@inject IDispatcher Dispatcher
+
+<PageTitle>Trade </PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    <MudText Typo="Typo.h4" Class="mb-4">
+        <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Class="mr-2" />
+        Buy Apple Stock (AAPL)
+    </MudText>
+
+    <MudGrid>
+        @* Account Summary Card *@
+        <MudItem xs="12" md="4">
+            @if (AccountState.Value.IsLoading)
+            {
+                <MudPaper Class="pa-4 d-flex justify-center align-center" Elevation="3" Style="min-height: 200px;">
+                    <MudStack AlignItems="AlignItems.Center" Spacing="3">
+                        <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+                        <MudText Typo="Typo.body1" Color="Color.Secondary">Loading account...</MudText>
+                    </MudStack>
+                </MudPaper>
+            }
+            else if (AccountState.Value.ErrorMessage != null)
+            {
+                <MudAlert Severity="Severity.Error">
+                    @AccountState.Value.ErrorMessage
+                </MudAlert>
+            }
+            else if (AccountState.Value.CurrentAccount != null)
+            {
+                <MudPaper Class="pa-4" Elevation="3">
+                    <MudText Typo="Typo.h6" Class="mb-3">
+                        <MudIcon Icon="@Icons.Material.Filled.AccountBalance" Class="mr-2" Color="Color.Primary" />
+                        Account Summary
+                    </MudText>
+                    <MudDivider Class="mb-3" />
+                    <MudStack Spacing="3">
+                        <div>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-1">
+                                Cash Balance
+                            </MudText>
+                            <MudText Typo="Typo.h4" Color="Color.Primary" Class="font-weight-bold">
+                                €@AccountState.Value.CurrentAccount.CashBalance.ToString("N2")
+                            </MudText>
+                        </div>
+                        <MudDivider />
+                        <MudGrid>
+                            <MudItem xs="6">
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Currency</MudText>
+                                <MudText Typo="Typo.body1" Class="font-weight-medium">
+                                    @AccountState.Value.CurrentAccount.Currency
+                                </MudText>
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Positions</MudText>
+                                <MudText Typo="Typo.body1" Class="font-weight-medium">
+                                    @AccountState.Value.CurrentAccount.Positions.Count
+                                </MudText>
+                            </MudItem>
+                        </MudGrid>
+                    </MudStack>
+                </MudPaper>
+            }
+            else
+            {
+                <MudAlert Severity="Severity.Info">
+                    No account data loaded. Click "Load Account" to fetch data.
+                </MudAlert>
+            }
+        </MudItem>
+
+        @* Order Form Card *@
+        <MudItem xs="12" md="8">
+            <MudPaper Class="pa-4" Elevation="3">
+                <MudText Typo="Typo.h6" Class="mb-4">
+                    <MudIcon Icon="@Icons.Material.Filled.ShoppingCart" Class="mr-2" />
+                    Place Order
+                </MudText>
+
+                <MudForm @ref="_form">
+                    <MudTextField 
+                        Label="Stock Symbol Trade"
+                        Value=@TradingState.Value.CurrentOrderRequest.Symbol
+                        ReadOnly="true" 
+                        Variant="Variant.Outlined" 
+                        Class="mb-3" />
+
+                    <MudTextField 
+                        Label="Current Price" 
+                        Value="@FormatCurrency(TradingState.Value.CurrentStockPrice ?? 0)"
+                        ReadOnly="true" 
+                        Variant="Variant.Outlined"
+                        Class="mb-3" />
+
+                    <MudNumericField 
+                        @bind-Value="@_quantity"
+                        Label="Number of Shares"
+                        Variant="Variant.Outlined"
+                        Min="1"
+                        Max="10000"
+                        Class="mb-3" />
+
+                    <MudTextField 
+                        Label="Total Amount" 
+                        Value="@FormatCurrency(CalculateTotalAmount())"
+                        ReadOnly="true" 
+                        Variant="Variant.Filled"
+                        Class="mb-3"
+                        Style="font-weight: bold;" />
+
+                    @if (AccountState.Value.CurrentAccount != null)
+                    {
+                        var remaining = AccountState.Value.CurrentAccount.CashBalance - CalculateTotalAmount();
+                        <MudAlert Severity="@(remaining >= 0 ? Severity.Info : Severity.Warning)" Class="mb-3">
+                            <MudText><strong>Available:</strong> @FormatCurrency(AccountState.Value.CurrentAccount.CashBalance)</MudText>
+                            <MudText><strong>Remaining:</strong> @FormatCurrency(remaining)</MudText>
+                        </MudAlert>
+                    }
+
+                    @if (TradingState.Value.ErrorMessage != null)
+                    {
+                        <MudAlert Severity="Severity.Error" Class="mb-3">
+                            @TradingState.Value.ErrorMessage
+                        </MudAlert>
+                    }
+
+                    @if (TradingState.Value.LastExecutedOrder != null)
+                    {
+                        <MudAlert Severity="Severity.Success" Class="mb-3">
+                            ✓ Order executed successfully! Order ID: @TradingState.Value.LastExecutedOrder.OrderId.ToString()[..8]...
+                        </MudAlert>
+                    }
+
+                    <MudStack Row="true" Spacing="2">
+                        <MudButton 
+                            Variant="Variant.Outlined" 
+                            Color="Color.Secondary"
+                            FullWidth="true"
+                            OnClick="@FetchStockPrice"
+                            Disabled="@TradingState.Value.IsExecuting">
+                            Refresh Price
+                        </MudButton>
+
+                        <MudButton 
+                            Variant="Variant.Filled" 
+                            Color="Color.Primary"
+                            FullWidth="true"
+                            OnClick="@PlaceOrder"
+                            Disabled="@(!CanPlaceOrder())">
+                            @(TradingState.Value.IsExecuting ? "Processing..." : "Place Order")
+                        </MudButton>
+                    </MudStack>
+                </MudForm>
+            </MudPaper>
+        </MudItem>
+
+        @* Debug Info *@
+        <MudItem xs="12">
+            <MudExpansionPanels>
+                <MudExpansionPanel Text="Debug Information">
+                    <MudSimpleTable Dense="true">
+                        <tbody>
+                            <tr>
+                                <td><strong>Account Loaded:</strong></td>
+                                <td>@(AccountState.Value.CurrentAccount != null ? "Yes" : "No")</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Account Loading:</strong></td>
+                                <td>@AccountState.Value.IsLoading</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Stock Price Loaded:</strong></td>
+                                <td>@(TradingState.Value.CurrentStockPrice.HasValue ? "Yes" : "No")</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Current Price:</strong></td>
+                                <td>@(TradingState.Value.CurrentStockPrice?.ToString("C") ?? "Not loaded")</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Is Executing:</strong></td>
+                                <td>@TradingState.Value.IsExecuting</td>
+                            </tr>
+                        </tbody>
+                    </MudSimpleTable>
+
+                    <MudButton OnClick="@LoadAccountManually" Color="Color.Info" Class="mt-2">
+                        Manually Load Account
+                    </MudButton>
+                    <MudButton OnClick="@FetchStockPrice" Color="Color.Info" Class="mt-2 ml-2">
+                        Manually Fetch Price
+                    </MudButton>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    private MudForm? _form;
+    private int _quantity = 10;
+    private Guid _accountId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        Console.WriteLine("TradingPage: OnInitializedAsync started");
+        
+        // Load account data
+        Console.WriteLine($"TradingPage: Dispatching LoadAccountAction for {_accountId}");
+        Dispatcher.Dispatch(new LoadAccountAction(_accountId));
+        
+        // Fetch stock price
+        Console.WriteLine("TradingPage: Dispatching FetchStockPriceAction for AAPL");
+        Dispatcher.Dispatch(new FetchStockPriceAction("AAPL"));
+
+        Console.WriteLine("TradingPage: OnInitializedAsync completed");
+    }
+
+    private void LoadAccountManually()
+    {
+        Console.WriteLine("Manual load account triggered");
+        Dispatcher.Dispatch(new LoadAccountAction(_accountId));
+    }
+
+    private void FetchStockPrice()
+    {
+        Console.WriteLine("Manual fetch price triggered");
+        Dispatcher.Dispatch(new FetchStockPriceAction("AAPL"));
+    }
+
+    private void PlaceOrder()
+    {
+        if (!CanPlaceOrder())
+        {
+            Console.WriteLine("Cannot place order - validation failed");
+            return;
+        }
+
+        Console.WriteLine($"Placing order for {_quantity} shares");
+        
+        // Update quantity in state first
+        Dispatcher.Dispatch(new UpdateOrderQuantityAction(_quantity));
+        
+        // Then execute order
+        Dispatcher.Dispatch(new ExecuteOrderAction(_accountId));
+    }
+
+    private bool CanPlaceOrder()
+    {
+        if (TradingState.Value.IsExecuting) return false;
+        if (_quantity <= 0) return false;
+        if (!TradingState.Value.CurrentStockPrice.HasValue) return false;
+        if (AccountState.Value.CurrentAccount == null) return false;
+
+        var totalAmount = CalculateTotalAmount();
+        return AccountState.Value.CurrentAccount.CashBalance >= totalAmount;
+    }
+
+    private decimal CalculateTotalAmount()
+    {
+        return (TradingState.Value.CurrentStockPrice ?? 0) * _quantity;
+    }
+
+    private string FormatCurrency(decimal amount)
+    {
+        return $"€{amount:N2}";
+    }
+}

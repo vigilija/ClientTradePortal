@@ -1,0 +1,17 @@
+﻿@* Root component - like Angular's AppComponent *@
+<Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <PageTitle>Not found</PageTitle>
+        <LayoutView Layout="@typeof(MainLayout)">
+            <MudContainer>
+                <MudAlert Severity="Severity.Error">
+                    Sorry, there's nothing at this address.
+                </MudAlert>
+            </MudContainer>
+        </LayoutView>
+    </NotFound>
+</Router>

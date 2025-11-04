@@ -1,0 +1,171 @@
+﻿@* Components/Trading/OrderForm.razor *@
+@using ClientTradePortal.Models.DTO
+@using ClientTradePortal.Store.Trading
+@using MudBlazor
+
+<MudPaper Class="pa-4" Elevation="3">
+    <MudText Typo="Typo.h6" Class="mb-4">
+        <MudIcon Icon="@Icons.Material.Filled.ShoppingCart" Class="mr-2" />
+        Place Order
+    </MudText>
+
+    <MudForm @ref="_form" @bind-IsValid="@_isValid">
+        @* Stock Symbol (Read-only) *@
+        <MudTextField 
+            Label="Stock Symbol Order" 
+            Value="@TradingState.CurrentOrderRequest.Symbol"
+            ReadOnly="true" 
+            Variant="Variant.Outlined" 
+            Class="mb-3"
+            Adornment="Adornment.Start"
+            AdornmentIcon="@Icons.Material.Filled.Storefront" />
+
+        @* Current Price Display *@
+        <MudTextField 
+            Label="Current Price" 
+            Value="@FormatCurrency(TradingState.CurrentStockPrice ?? 0)"
+            ReadOnly="true" 
+            Variant="Variant.Outlined"
+            Adornment="Adornment.Start"
+            AdornmentIcon="@Icons.Material.Filled.Euro"
+            Class="mb-3" />
+
+        @* Quantity Input *@
+        <MudNumericField 
+            @bind-Value="@_quantity"
+            Label="Number of Shares"
+            Variant="Variant.Outlined"
+            Min="1"
+            Max="10000"
+            Required="true"
+            RequiredError="Quantity is required"
+            Class="mb-3"
+            Immediate="true"
+            Adornment="Adornment.Start"
+            AdornmentIcon="@Icons.Material.Filled.Numbers"
+            OnBlur="@OnQuantityBlur" />
+
+        @* Total Amount Display *@
+        <MudTextField 
+            Label="Total Amount" 
+            Value="@FormatCurrency(TradingState.TotalOrderAmount)"
+            ReadOnly="true" 
+            Variant="Variant.Filled"
+            Adornment="Adornment.Start"
+            AdornmentIcon="@Icons.Material.Filled.Euro"
+            Class="mb-3"
+            Style="font-weight: bold; font-size: 1.2em;" />
+
+        @* Validation Messages *@
+        @if (TradingState.ValidationResult != null && !TradingState.ValidationResult.IsValid)
+        {
+            <MudAlert Severity="Severity.Error" Class="mb-3" Variant="Variant.Filled">
+                <MudText Typo="Typo.subtitle2" Class="font-weight-bold mb-2">
+                    Validation Errors:
+                </MudText>
+                @foreach (var error in TradingState.ValidationResult.Errors)
+                {
+                    <MudText Typo="Typo.body2">• @error</MudText>
+                }
+            </MudAlert>
+        }
+
+        @* Available Balance Info *@
+        @if (Account != null)
+        {
+            var remainingBalance = Account.CashBalance - TradingState.TotalOrderAmount;
+            var hasInsufficientFunds = remainingBalance < 0;
+
+            <MudAlert 
+                Severity="@(hasInsufficientFunds ? Severity.Warning : Severity.Info)" 
+                Class="mb-3"
+                Icon="@Icons.Material.Filled.AccountBalance">
+                <MudText Typo="Typo.body2">
+                    <strong>Available Balance:</strong> @FormatCurrency(Account.CashBalance)
+                </MudText>
+                <MudText Typo="Typo.body2" Color="@(hasInsufficientFunds ? Color.Error : Color.Success)">
+                    <strong>Remaining After Purchase:</strong> @FormatCurrency(remainingBalance)
+                </MudText>
+            </MudAlert>
+        }
+
+        @* Action Buttons *@
+        <MudStack Row="true" Spacing="2">
+            <MudButton 
+                Variant="Variant.Outlined" 
+                Color="Color.Secondary"
+                FullWidth="true"
+                Disabled="@TradingState.IsValidating"
+                OnClick="@OnValidateClick"
+                StartIcon="@Icons.Material.Filled.CheckCircle">
+                Validate Order
+            </MudButton>
+
+            <MudButton 
+                Variant="Variant.Filled" 
+                Color="Color.Primary"
+                FullWidth="true"
+                Size="Size.Large"
+                Disabled="@(!CanPlaceOrder())"
+                OnClick="@OnPlaceOrderClick"
+                StartIcon="@Icons.Material.Filled.ShoppingCart">
+                @(TradingState.IsExecuting ? "Processing..." : "Place Buy Order")
+            </MudButton>
+        </MudStack>
+    </MudForm>
+</MudPaper>
+
+@code {
+    [Parameter] public AccountResponse? Account { get; set; }
+    [Parameter] public TradingState TradingState { get; set; } = new();
+    [Parameter] public EventCallback<int> OnQuantityChanged { get; set; }
+    [Parameter] public EventCallback OnValidateOrder { get; set; }
+    [Parameter] public EventCallback OnPlaceOrder { get; set; }
+
+    private MudForm? _form;
+    private bool _isValid;
+    private int _quantity = 1;
+
+    protected override void OnParametersSet()
+    {
+        _quantity = TradingState.CurrentOrderRequest.Quantity > 0 
+            ? TradingState.CurrentOrderRequest.Quantity 
+            : 1;
+    }
+
+    private async Task OnQuantityBlur()
+    {
+        await OnQuantityChanged.InvokeAsync(_quantity);
+    }
+
+    private async Task OnValidateClick()
+    {
+        await _form!.Validate();
+        
+        if (_isValid)
+        {
+            await OnValidateOrder.InvokeAsync();
+        }
+    }
+
+    private async Task OnPlaceOrderClick()
+    {
+        await OnPlaceOrder.InvokeAsync();
+    }
+
+    private bool CanPlaceOrder()
+    {
+        return !TradingState.IsExecuting
+            && !TradingState.IsValidating
+            && _quantity > 0
+            && TradingState.CurrentStockPrice.HasValue
+            && TradingState.ValidationResult?.IsValid == true
+            && Account != null
+            && Account.CashBalance >= TradingState.TotalOrderAmount;
+    }
+
+    private string FormatCurrency(decimal amount)
+    {
+        return $"€{amount:N2}";
+    }
+}

@@ -1,0 +1,57 @@
+﻿@using MudBlazor
+@* Layouts/MainLayout.razor - Simple Top Menu Only *@
+@inherits LayoutComponentBase
+
+<MudThemeProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="1" Dense="false" Color="Color.Primary">
+        <MudText Typo="Typo.h5" Class="ml-3 mr-6">Trading Portal</MudText>
+        
+        @* Navigation Tabs *@
+        <MudButton Href="/" 
+                   StartIcon="@Icons.Material.Filled.Home" 
+                   Color="Color.Inherit"
+                   Variant="Variant.Text"
+                   Class="mx-1">
+            Home
+        </MudButton>
+        <MudButton Href="/trade" 
+                   StartIcon="@Icons.Material.Filled.TrendingUp" 
+                   Color="Color.Inherit"
+                   Variant="Variant.Text"
+                   Class="mx-1">
+            Trade
+        </MudButton>
+        <MudButton Href="/portfolio" 
+                   StartIcon="@Icons.Material.Filled.AccountBalance" 
+                   Color="Color.Inherit"
+                   Variant="Variant.Text"
+                   Class="mx-1">
+            Portfolio
+        </MudButton>
+        <MudButton Href="/orders" 
+                   StartIcon="@Icons.Material.Filled.Receipt" 
+                   Color="Color.Inherit"
+                   Variant="Variant.Text"
+                   Class="mx-1">
+            Orders
+        </MudButton>
+        
+        <MudSpacer />
+        
+        @* Right side *@
+        <MudIconButton Icon="@Icons.Material.Filled.Notifications" 
+                       Color="Color.Inherit" />
+        <MudIconButton Icon="@Icons.Material.Filled.AccountCircle" 
+                       Color="Color.Inherit" />
+    </MudAppBar>
+
+    <MudMainContent>
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="my-4 pt-4">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>

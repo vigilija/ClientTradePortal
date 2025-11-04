@@ -1,0 +1,85 @@
+﻿@page "/"
+@using MudBlazor
+
+<Fluxor.Blazor.Web.StoreInitializer />
+
+<PageTitle>Home</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8">
+    <MudPaper Class="pa-8" Elevation="3">
+        <MudText Typo="Typo.h3" Align="Align.Center" GutterBottom="true">
+            Welcome Apple Trading Portal
+        </MudText>
+        
+        <MudText Typo="Typo.h6" Align="Align.Center" Class="mb-4" Color="Color.Secondary">
+            Your gateway to stock trading
+        </MudText>
+
+        <MudDivider Class="my-6" />
+
+        <MudGrid Justify="Justify.Center">
+            <MudItem xs="12" sm="6" md="4">
+                <MudPaper Class="pa-4 text-center" Elevation="0">
+                    <MudIcon Icon="@Icons.Material.Filled.TrendingUp" 
+                             Color="Color.Primary" 
+                             Size="Size.Large" 
+                             Class="mb-2" />
+                    <MudText Typo="Typo.h6">Trade Stocks</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Buy and sell stocks with ease
+                    </MudText>
+                    <MudButton Href="/trade" 
+                               Variant="Variant.Filled" 
+                               Color="Color.Primary" 
+                               Class="mt-4">
+                        Start Trading
+                    </MudButton>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="4">
+                <MudPaper Class="pa-4 text-center" Elevation="0">
+                    <MudIcon Icon="@Icons.Material.Filled.AccountBalance" 
+                             Color="Color.Success" 
+                             Size="Size.Large" 
+                             Class="mb-2" />
+                    <MudText Typo="Typo.h6">Portfolio</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        View your investments
+                    </MudText>
+                    <MudButton Href="/portfolio" 
+                               Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Class="mt-4">
+                        View Portfolio
+                    </MudButton>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="4">
+                <MudPaper Class="pa-4 text-center" Elevation="0">
+                    <MudIcon Icon="@Icons.Material.Filled.Receipt" 
+                             Color="Color.Info" 
+                             Size="Size.Large" 
+                             Class="mb-2" />
+                    <MudText Typo="Typo.h6">Order History</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Track your orders
+                    </MudText>
+                    <MudButton Href="/orders" 
+                               Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Class="mt-4">
+                        View Orders
+                    </MudButton>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+        <MudDivider Class="my-6" />
+
+        <MudAlert Severity="Severity.Info" Class="mt-4">
+            <strong>Test Mode:</strong> This is a demo application. No real money is involved.
+        </MudAlert>
+    </MudPaper>
+</MudContainer>

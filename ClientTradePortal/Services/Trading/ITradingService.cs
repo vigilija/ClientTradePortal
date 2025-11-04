@@ -1,0 +1,10 @@
+﻿using ClientTradePortal.Models.DTO;
+
+namespace ClientTradePortal.Services.Trading;
+public interface ITradingService
+{
+    Task<decimal> GetStockPriceAsync(string symbol, CancellationToken cancellationToken = default);
+    Task<OrderResponse> PlaceOrderAsync(OrderRequest request, CancellationToken cancellationToken = default);
+    Task<ValidationResponse> ValidateOrderAsync(ValidationRequest request, CancellationToken cancellationToken = default);
+    Task<List<OrderResponse>> GetOrdersAsync(Guid accountId, int pageNumber, int pageSize, CancellationToken cancellationToken = default);
+}

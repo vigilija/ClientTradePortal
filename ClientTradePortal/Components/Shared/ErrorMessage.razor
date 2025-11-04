@@ -1,0 +1,14 @@
+﻿@using MudBlazor
+@* Components/Shared/ErrorMessage.razor *@
+<MudAlert Severity="Severity.Error" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Error">
+    <MudText Typo="Typo.body1" Class="font-weight-bold mb-2">
+        An error occurred
+    </MudText>
+    <MudText Typo="Typo.body2">
+        @Message
+    </MudText>
+</MudAlert>
+
+@code {
+    [Parameter, EditorRequired] public string Message { get; set; } = string.Empty;
+}
