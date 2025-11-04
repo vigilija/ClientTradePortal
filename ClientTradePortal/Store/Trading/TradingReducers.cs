@@ -1,5 +1,4 @@
-﻿using ClientTradePortal.Models.DTO;
-using ClientTradePortal.Store.Trading;
+﻿using ClientTradePortal.Store.Trading;
 using Fluxor;
 
 public static class TradingReducers
@@ -14,6 +13,21 @@ public static class TradingReducers
             CurrentOrderRequest = state.CurrentOrderRequest with
             {
                 Quantity = action.Quantity
+            },
+            ValidationResult = null
+        };
+    }
+
+    [ReducerMethod]
+    public static TradingState ReduceUpdateOrderSymbolAction(
+        TradingState state,
+        UpdateOrderSymbolAction action)
+    {
+        return state with
+        {
+            CurrentOrderRequest = state.CurrentOrderRequest with
+            {
+                Symbol = action.Symbol
             },
             ValidationResult = null
         };

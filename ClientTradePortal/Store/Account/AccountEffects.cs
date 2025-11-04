@@ -28,7 +28,7 @@ public class AccountEffects
         try
         {
             var account = await _accountService.GetAccountAsync(action.AccountId);
-            Console.WriteLine($"AccountEffects: Account loaded successfully. Balance: {account.Positions.FirstOrDefault().Symbol}");
+    //        Console.WriteLine($"AccountEffects: Account loaded successfully. Balance: {account.Positions.FirstOrDefault().Symbol}");
             dispatcher.Dispatch(new LoadAccountSuccessAction(account));
         }
         catch (Exception ex)

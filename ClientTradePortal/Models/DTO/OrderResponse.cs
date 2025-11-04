@@ -4,7 +4,7 @@ public class OrderResponse
 {
     public Guid OrderId { get; set; }
     public Guid AccountId { get; set; }
-    public string Symbol { get; set; } = string.Empty;
+    public string Symbol { get; set; }
     public string OrderType { get; set; }
     public int Quantity { get; set; }
     public decimal PricePerShare { get; set; }

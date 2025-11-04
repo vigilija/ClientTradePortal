@@ -1,7 +1,6 @@
 ﻿using ClientTradePortal.Models.DTO;
 using ClientTradePortal.Services.Trading;
 using ClientTradePortal.Store.Account;
-using ClientTradePortal.Store.Trading;
 using Fluxor;
 
 namespace ClientTradePortal.Store.Trading;
@@ -31,8 +30,8 @@ public class TradingEffects
 
         try
         {
-            var price = await _tradingService.GetStockPriceAsync(action.Symbol);
-            dispatcher.Dispatch(new FetchStockPriceSuccessAction(price));
+            var result = await _tradingService.GetStockPriceAsync(action.Symbol);
+            dispatcher.Dispatch(new FetchStockPriceSuccessAction(result.Price));
         }
         catch (Exception ex)
         {

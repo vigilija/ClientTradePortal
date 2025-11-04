@@ -88,7 +88,7 @@
                 <MudForm @ref="_form">
                     <MudTextField 
                         Label="Stock Symbol Trade"
-                        Value=@TradingState.Value.CurrentOrderRequest.Symbol
+                        Value="@_stockSymbol"
                         ReadOnly="true" 
                         Variant="Variant.Outlined" 
                         Class="mb-3" />
@@ -205,7 +205,8 @@
 
 @code {
     private MudForm? _form;
-    private int _quantity = 10;
+    private int _quantity = 1;
+    private string _stockSymbol = "AAPL";
     private Guid _accountId = Guid.Parse("11111111-1111-1111-1111-111111111111");
 
     protected override async Task OnInitializedAsync()
@@ -241,12 +242,13 @@
     {
         if (!CanPlaceOrder())
         {
-            Console.WriteLine("Cannot place order - validation failed");
+            Console.WriteLine("-------------------Cannot place order - validation failed");
             return;
         }
 
         Console.WriteLine($"Placing order for {_quantity} shares");
         
+        Dispatcher.Dispatch(new UpdateOrderSymbolAction(_stockSymbol));
         // Update quantity in state first
         Dispatcher.Dispatch(new UpdateOrderQuantityAction(_quantity));
         

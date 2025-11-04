@@ -1,6 +1,6 @@
 ﻿namespace ClientTradePortal.Models.DTO;
 
-public class ApiResponse<T>
+public class ApiAccountResponse<T>
 {
     public bool Success { get; set; }
     public string? Message { get; set; }

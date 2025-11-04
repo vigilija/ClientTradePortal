@@ -1,6 +1,7 @@
 ﻿using ClientTradePortal.Models.DTO;
 
 public record UpdateOrderQuantityAction(int Quantity);
+public record UpdateOrderSymbolAction(string Symbol);
 public record FetchStockPriceAction(string Symbol);
 public record FetchStockPriceSuccessAction(decimal Price);
 public record FetchStockPriceFailureAction(string ErrorMessage);

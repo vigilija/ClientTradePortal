@@ -13,6 +13,7 @@ using MudBlazor.Services;
 using Polly;
 using Polly.Extensions.Http;
 using Refit;
+using Microsoft.AspNetCore.Cors;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
@@ -22,7 +23,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 // Configuration (like Angular environment files)
 var apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"]
-    ?? "https://localhost:7001";
+    ?? "http://localhost:5075";
 
 // ============ SERVICES REGISTRATION (like Angular providers) ============
 
@@ -105,6 +106,24 @@ builder.Services.AddRefitClient<IValidationApiClient>()
     .ConfigureHttpClient(c => c.BaseAddress = new Uri(apiBaseUrl))
     .AddPolicyHandler(retryPolicy);
 
+//builder.Services.AddCors(options =>
+//{
+//    options.AddPolicy("AllowFrontend",
+//        policy =>
+//        {
+//            policy.WithOrigins("http://localhost:5075", "") // Your frontend URL
+//                  .AllowAnyHeader()
+//                  .AllowAnyMethod();
+//        });
+//});
+
+
+//builder.Services.AddScoped(sp => new HttpClient
+//{
+//    BaseAddress = new Uri("http://localhost:5075") // Change to YOUR API port
+//});
+
+builder.Services.AddMemoryCache();
 
 //builder.Services.AddAuthorizationCore();
 //builder.Services.AddCascadingAuthenticationState();

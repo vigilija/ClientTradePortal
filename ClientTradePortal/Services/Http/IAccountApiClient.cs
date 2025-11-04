@@ -5,17 +5,17 @@ namespace ClientTradePortal.Services.Http;
 public interface IAccountApiClient
 {
     [Get("/api/accounts/{accountId}")]
-    Task<Refit.ApiResponse<AccountResponse>> GetAccountAsync(
+    Task<ApiAccountResponse<AccountResponse>> GetAccountAsync(
         Guid accountId,
         CancellationToken cancellationToken = default);
 
     [Get("/api/accounts/{accountId}/balance")]
-    Task<Refit.ApiResponse<AccountBalanceResponse>> GetBalanceAsync(
+    Task<ApiAccountResponse<AccountBalanceResponse>> GetBalanceAsync(
         Guid accountId,
         CancellationToken cancellationToken = default);
 
     [Get("/api/accounts/{accountId}/positions")]
-    Task<Refit.ApiResponse<List<StockPositionResponse>>> GetPositionsAsync(
+    Task<ApiAccountResponse<List<StockPositionResponse>>> GetPositionsAsync(
         Guid accountId,
         CancellationToken cancellationToken = default);
 }
