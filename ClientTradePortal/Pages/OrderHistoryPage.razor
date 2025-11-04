@@ -76,12 +76,6 @@
                         <MudIcon Icon="@Icons.Material.Filled.History" Class="mr-2" />
                         Recent Orders
                     </MudText>
-                    <MudButton StartIcon="@Icons.Material.Filled.Refresh" 
-                               Color="Color.Primary" 
-                               Variant="Variant.Outlined"
-                               OnClick="@LoadOrders">
-                        Refresh
-                    </MudButton>
                 </MudStack>
 
                 @if (TradingState.Value.OrderHistory.Count == 0)
@@ -98,7 +92,6 @@
                               Loading="@_isLoading"
                               Dense="true">
                         <HeaderContent>
-                            <MudTh>Order ID</MudTh>
                             <MudTh>Date</MudTh>
                             <MudTh>Symbol</MudTh>
                             <MudTh>Type</MudTh>
@@ -106,20 +99,11 @@
                             <MudTh Class="text-right">Price</MudTh>
                             <MudTh Class="text-right">Total</MudTh>
                             <MudTh>Status</MudTh>
-                            <MudTh>Actions</MudTh>
                         </HeaderContent>
                         <RowTemplate>
-                            <MudTd DataLabel="Order ID">
-                                <MudText Typo="Typo.body2" Style="font-family: monospace;">
-                                    @context.OrderId.ToString()[..8]...
-                                </MudText>
-                            </MudTd>
                             <MudTd DataLabel="Date">
                                 <MudText Typo="Typo.body2">
                                     @context.CreatedAt.ToString("MMM dd, yyyy")
-                                </MudText>
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                    @context.CreatedAt.ToString("HH:mm:ss")
                                 </MudText>
                             </MudTd>
                             <MudTd DataLabel="Symbol">
@@ -148,12 +132,6 @@
                                          Icon="@GetStatusIcon(context.Status)">
                                     @context.Status
                                 </MudChip>
-                            </MudTd>
-                            <MudTd DataLabel="Actions">
-                                <MudIconButton Icon="@Icons.Material.Filled.Visibility" 
-                                               Size="Size.Small" 
-                                               Color="Color.Primary"
-                                               OnClick="@(() => ShowOrderDetails(context))" />
                             </MudTd>
                         </RowTemplate>
                         <PagerContent>

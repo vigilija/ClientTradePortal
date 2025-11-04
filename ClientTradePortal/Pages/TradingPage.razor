@@ -142,15 +142,6 @@
 
                     <MudStack Row="true" Spacing="2">
                         <MudButton 
-                            Variant="Variant.Outlined" 
-                            Color="Color.Secondary"
-                            FullWidth="true"
-                            OnClick="@FetchStockPrice"
-                            Disabled="@TradingState.Value.IsExecuting">
-                            Refresh Price
-                        </MudButton>
-
-                        <MudButton 
                             Variant="Variant.Filled" 
                             Color="Color.Primary"
                             FullWidth="true"
@@ -161,45 +152,6 @@
                     </MudStack>
                 </MudForm>
             </MudPaper>
-        </MudItem>
-
-        @* Debug Info *@
-        <MudItem xs="12">
-            <MudExpansionPanels>
-                <MudExpansionPanel Text="Debug Information">
-                    <MudSimpleTable Dense="true">
-                        <tbody>
-                            <tr>
-                                <td><strong>Account Loaded:</strong></td>
-                                <td>@(AccountState.Value.CurrentAccount != null ? "Yes" : "No")</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Account Loading:</strong></td>
-                                <td>@AccountState.Value.IsLoading</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Stock Price Loaded:</strong></td>
-                                <td>@(TradingState.Value.CurrentStockPrice.HasValue ? "Yes" : "No")</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Current Price:</strong></td>
-                                <td>@(TradingState.Value.CurrentStockPrice?.ToString("C") ?? "Not loaded")</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Is Executing:</strong></td>
-                                <td>@TradingState.Value.IsExecuting</td>
-                            </tr>
-                        </tbody>
-                    </MudSimpleTable>
-
-                    <MudButton OnClick="@LoadAccountManually" Color="Color.Info" Class="mt-2">
-                        Manually Load Account
-                    </MudButton>
-                    <MudButton OnClick="@FetchStockPrice" Color="Color.Info" Class="mt-2 ml-2">
-                        Manually Fetch Price
-                    </MudButton>
-                </MudExpansionPanel>
-            </MudExpansionPanels>
         </MudItem>
     </MudGrid>
 </MudContainer>
