@@ -1,7 +1,4 @@
-﻿using ClientTradePortal.Models.DTO;
-using Fluxor;
-
-namespace ClientTradePortal.Store.Account;
+﻿namespace ClientTradePortal.Store.Account;
 
 [FeatureState]
 public record AccountState

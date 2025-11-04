@@ -1,0 +1,16 @@
+﻿global using Blazored.LocalStorage;
+global using ClientTradePortal;
+global using ClientTradePortal.Services.Account;
+global using ClientTradePortal.Services.Http;
+global using ClientTradePortal.Services.Trading;
+global using Fluxor;
+global using Microsoft.AspNetCore.Components.Web;
+global using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+global using MudBlazor.Services;
+global using Polly;
+global using Polly.Extensions.Http;
+global using Refit;
+global using ClientTradePortal.Models.DTO;
+global using ClientTradePortal.Store.Account;
+global using ClientTradePortal.Store.Trading;
+global using Microsoft.Extensions.Caching.Memory;

@@ -1,9 +1,4 @@
-﻿using ClientTradePortal.Models.DTO;
-using ClientTradePortal.Services.Trading;
-using ClientTradePortal.Store.Account;
-using Fluxor;
-
-namespace ClientTradePortal.Store.Trading;
+﻿namespace ClientTradePortal.Store.Trading;
 
 public class TradingEffects
 {

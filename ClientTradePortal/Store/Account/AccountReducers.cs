@@ -1,7 +1,4 @@
-﻿using ClientTradePortal.Store.Account;
-using Fluxor;
-
-public static class AccountReducers
+﻿public static class AccountReducers
 {
     [ReducerMethod]
     public static AccountState ReduceLoadAccountAction(

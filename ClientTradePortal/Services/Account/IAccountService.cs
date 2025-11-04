@@ -1,6 +1,4 @@
-﻿using ClientTradePortal.Models.DTO;
-
-namespace ClientTradePortal.Services.Account;
+﻿namespace ClientTradePortal.Services.Account;
 public interface IAccountService
 {
     Task<AccountResponse> GetAccountAsync(

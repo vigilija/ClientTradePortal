@@ -1,8 +1,6 @@
 ﻿using ClientTradePortal.Models.DTO;
 using ClientTradePortal.Services.Http;
 using Refit;
-using Microsoft.Extensions.Caching.Memory;
-
 namespace ClientTradePortal.Services.Account;
 public class AccountService : IAccountService
 {

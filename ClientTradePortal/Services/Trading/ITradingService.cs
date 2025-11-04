@@ -1,7 +1,4 @@
-﻿using ClientTradePortal.Models.DTO;
-using ClientTradePortal.Services.Http;
-
-namespace ClientTradePortal.Services.Trading;
+﻿namespace ClientTradePortal.Services.Trading;
 public interface ITradingService
 {
     Task<StockQuoteResponse> GetStockPriceAsync(string symbol, CancellationToken cancellationToken = default);

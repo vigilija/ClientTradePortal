@@ -1,9 +1,4 @@
-﻿using ClientTradePortal.Models.DTO;
-using ClientTradePortal.Services.Http;
-using Microsoft.Extensions.Caching.Memory;
-using Refit;
-
-namespace ClientTradePortal.Services.Trading;
+﻿namespace ClientTradePortal.Services.Trading;
 
 public class TradingService : ITradingService
 {
@@ -32,10 +27,10 @@ public class TradingService : ITradingService
         {
             var cacheKey = $"stock_price_{symbol}";
 
-           // if (_cache.TryGetValue(cacheKey, out StockQuoteResponse cachedPrice))
-           // {
-           //     return cachedPrice;
-          //  }
+            if (_cache.TryGetValue(cacheKey, out StockQuoteResponse cachedPrice))
+            {
+                return cachedPrice;
+            }
 
             var response = await _tradingApiClient.GetQuoteAsync(symbol, cancellationToken);
 
@@ -46,7 +41,7 @@ public class TradingService : ITradingService
             }
 
             // Cache for 30 seconds
-            //_cache.Set(cacheKey, response.Data.Price, TimeSpan.FromSeconds(30));
+            _cache.Set(cacheKey, response.Data.Price, TimeSpan.FromSeconds(30));
 
             return response.Data;
         }

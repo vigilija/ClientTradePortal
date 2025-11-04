@@ -1,50 +1,28 @@
-using Blazored.LocalStorage;
-using ClientTradePortal;
-using ClientTradePortal.Services.Account;
-using ClientTradePortal.Services.Auth;
-using ClientTradePortal.Services.Http;
-using ClientTradePortal.Services.Trading;
-using Fluxor;
-using Fluxor.Blazor.Web.ReduxDevTools;
-using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using MudBlazor.Services;
-using Polly;
-using Polly.Extensions.Http;
-using Refit;
-using Microsoft.AspNetCore.Cors;
-
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-// Root components (like Angular's bootstrap)
+// Root components 
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-// Configuration (like Angular environment files)
+// Configuration
 var apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"]
     ?? "http://localhost:5075";
-
-// ============ SERVICES REGISTRATION (like Angular providers) ============
 
 // MudBlazor UI Components
 builder.Services.AddMudServices();
 
-// Fluxor State Management (like NgRx)
+// Fluxor State Management 
 builder.Services.AddFluxor(options =>
 {
     options.ScanAssemblies(typeof(Program).Assembly);
     options.UseRouting();
-#if DEBUG
-    options.UseReduxDevTools();
-#endif
     Console.WriteLine(" Fluxor configured - scanning assemblies");
 });
 
-// Local Storage (like Angular localStorage wrapper)
+// Local Storage 
 builder.Services.AddBlazoredLocalStorage();
 
-// HTTP Client with retry policies (like Angular HttpClient)
+// HTTP Client with retry policies
 var retryPolicy = HttpPolicyExtensions
     .HandleTransientHttpError()
     .WaitAndRetryAsync(3, retryAttempt =>
@@ -81,19 +59,11 @@ builder.Services.AddRefitClient<IValidationApiClient>()
     })
     .AddPolicyHandler(retryPolicy);
 
-// Application Services (like Angular @Injectable services)
+// Application Services 
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<ITradingService, TradingService>();
 
-Console.WriteLine(" Services registered");
-
-
-builder.Services.AddAuthorizationCore();
-builder.Services.AddCascadingAuthenticationState();
-
-builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
-
-// Register Refit API Clients (Mock for now since API doesn't exist)
+// Register Refit API Clients
 builder.Services.AddRefitClient<IAccountApiClient>()
     .ConfigureHttpClient(c => c.BaseAddress = new Uri(apiBaseUrl))
     .AddPolicyHandler(retryPolicy);
@@ -105,38 +75,7 @@ builder.Services.AddRefitClient<ITradingApiClient>()
 builder.Services.AddRefitClient<IValidationApiClient>()
     .ConfigureHttpClient(c => c.BaseAddress = new Uri(apiBaseUrl))
     .AddPolicyHandler(retryPolicy);
-
-//builder.Services.AddCors(options =>
-//{
-//    options.AddPolicy("AllowFrontend",
-//        policy =>
-//        {
-//            policy.WithOrigins("http://localhost:5075", "") // Your frontend URL
-//                  .AllowAnyHeader()
-//                  .AllowAnyMethod();
-//        });
-//});
-
-
-//builder.Services.AddScoped(sp => new HttpClient
-//{
-//    BaseAddress = new Uri("http://localhost:5075") // Change to YOUR API port
-//});
-
 builder.Services.AddMemoryCache();
-
-//builder.Services.AddAuthorizationCore();
-//builder.Services.AddCascadingAuthenticationState();
-//builder.Services.AddSingleton<AuthenticationStateProvider, PersistentAuthenticationStateProvider>();
-
-//builder.Services.AddScoped<ILocalStorageService, LocalStorageService>();------------
-
-//Interceptors(like Angular HTTP interceptors)
-//builder.Services.AddScoped<AuthenticationInterceptor>(); //----------
-//builder.Services.AddScoped<ErrorInterceptor>(); //------------
-
-// Memory Cache
-//builder.Services.AddMemoryCache();----------
 
 // Build and run
 await builder.Build().RunAsync();

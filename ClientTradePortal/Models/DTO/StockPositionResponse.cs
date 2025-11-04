@@ -1,5 +1,4 @@
-﻿// Models/DTO/StockPositionResponse.cs
-namespace ClientTradePortal.Models.DTO;
+﻿namespace ClientTradePortal.Models.DTO;
 
 public class StockPositionResponse
 {
@@ -10,7 +9,7 @@ public class StockPositionResponse
 
     // Calculated properties
     public decimal TotalValue => Quantity * CurrentPrice;
-    public decimal TotalCost => Quantity * AveragePrice;  // ← Add this
+    public decimal TotalCost => Quantity * AveragePrice;
     public decimal ProfitLoss => TotalValue - TotalCost;
     public decimal ProfitLossPercentage =>
         TotalCost > 0 ? ((TotalValue - TotalCost) / TotalCost) * 100 : 0;

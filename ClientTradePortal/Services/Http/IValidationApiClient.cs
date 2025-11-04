@@ -1,7 +1,4 @@
-﻿using ClientTradePortal.Models.DTO;
-using Refit;
-
-namespace ClientTradePortal.Services.Http;
+﻿namespace ClientTradePortal.Services.Http;
 public interface IValidationApiClient
 {
     [Post("/api/validation/order")]

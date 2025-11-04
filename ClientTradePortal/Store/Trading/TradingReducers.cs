@@ -1,7 +1,4 @@
-﻿using ClientTradePortal.Store.Trading;
-using Fluxor;
-
-public static class TradingReducers
+﻿public static class TradingReducers
 {
     [ReducerMethod]
     public static TradingState ReduceUpdateOrderQuantityAction(

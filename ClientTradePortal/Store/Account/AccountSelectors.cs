@@ -1,11 +1,5 @@
-﻿using ClientTradePortal.Models.DTO;
-using ClientTradePortal.Store.Account;
-using Fluxor;
-
-
-public static class AccountSelectors
+﻿public static class AccountSelectors
 {
-    //[FeatureSelector]
     public static AccountState SelectAccountState(IState<AccountState> state)
         => state.Value;
 
