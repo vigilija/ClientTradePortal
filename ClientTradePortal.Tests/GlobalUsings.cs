@@ -1,0 +1,11 @@
+global using Xunit;
+global using Moq;
+global using FluentAssertions;
+global using ClientTradePortal.Services.Account;
+global using ClientTradePortal.Services.Trading;
+global using ClientTradePortal.Services.Http;
+global using ClientTradePortal.Models.DTO;
+global using ClientTradePortal.Store.Account;
+global using ClientTradePortal.Store.Trading;
+global using Microsoft.Extensions.Caching.Memory;
+global using Microsoft.Extensions.Logging;
