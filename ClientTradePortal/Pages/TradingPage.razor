@@ -7,7 +7,7 @@
 @inject IState<AccountState> AccountState
 @inject IState<TradingState> TradingState
 @inject IDispatcher Dispatcher
-@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject IStore Store
 
 <PageTitle>Trade </PageTitle>
 
@@ -169,22 +169,24 @@
 
         Console.WriteLine("TradingPage: OnInitializedAsync started");
 
-        // Try to restore from localStorage (works immediately, even if Fluxor effects aren't ready)
-        try
+        // Wait for Fluxor Store to finish initializing
+        int retries = 0;
+        while (!Store.Initialized && retries < 50) // Max 5 seconds (50 * 100ms)
         {
-            var cachedAccount = await LocalStorage.GetItemAsync<AccountResponse>("AccountState_CurrentAccount");
-            if (cachedAccount != null)
-            {
-                Console.WriteLine($"TradingPage: Restored from localStorage - Balance: {cachedAccount.CashBalance}");
-                Dispatcher.Dispatch(new LoadAccountSuccessAction(cachedAccount));
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"TradingPage: localStorage restore failed: {ex.Message}");
+            Console.WriteLine($"TradingPage: Waiting for Fluxor to initialize... (attempt {retries + 1})");
+            await Task.Delay(100);
+            retries++;
         }
 
-        // Load fresh account data (will also save to localStorage when effect triggers)
+        if (!Store.Initialized)
+        {
+            Console.WriteLine("TradingPage: ERROR - Fluxor failed to initialize in time!");
+            return;
+        }
+
+        Console.WriteLine("TradingPage: Fluxor is ready!");
+
+        // Now dispatch actions - Fluxor is guaranteed ready
         Console.WriteLine($"TradingPage: Dispatching LoadAccountAction for {_accountId}");
         Dispatcher.Dispatch(new LoadAccountAction(_accountId));
 
