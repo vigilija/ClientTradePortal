@@ -169,24 +169,18 @@
 
         Console.WriteLine("TradingPage: OnInitializedAsync started");
 
-        // Wait for Fluxor Store to finish initializing
-        int retries = 0;
-        bool isInitialized = await Store.Initialized;
-        while (!isInitialized && retries < 50) // Max 5 seconds (50 * 100ms)
+        // Wait for Fluxor Store to initialize
+        try
         {
-            Console.WriteLine($"TradingPage: Waiting for Fluxor to initialize... (attempt {retries + 1})");
-            await Task.Delay(100);
-            isInitialized = await Store.Initialized;
-            retries++;
+            Console.WriteLine("TradingPage: Waiting for Fluxor to initialize...");
+            await Store.InitializeAsync();
+            Console.WriteLine("TradingPage: Fluxor is ready!");
         }
-
-        if (!isInitialized)
+        catch (Exception ex)
         {
-            Console.WriteLine("TradingPage: ERROR - Fluxor failed to initialize in time!");
+            Console.WriteLine($"TradingPage: ERROR - Fluxor initialization failed: {ex.Message}");
             return;
         }
-
-        Console.WriteLine("TradingPage: Fluxor is ready!");
 
         // Now dispatch actions - Fluxor is guaranteed ready
         Console.WriteLine($"TradingPage: Dispatching LoadAccountAction for {_accountId}");
