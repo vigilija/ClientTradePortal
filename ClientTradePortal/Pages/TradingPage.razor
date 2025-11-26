@@ -171,14 +171,16 @@
 
         // Wait for Fluxor Store to finish initializing
         int retries = 0;
-        while (!Store.Initialized && retries < 50) // Max 5 seconds (50 * 100ms)
+        bool isInitialized = await Store.Initialized;
+        while (!isInitialized && retries < 50) // Max 5 seconds (50 * 100ms)
         {
             Console.WriteLine($"TradingPage: Waiting for Fluxor to initialize... (attempt {retries + 1})");
             await Task.Delay(100);
+            isInitialized = await Store.Initialized;
             retries++;
         }
 
-        if (!Store.Initialized)
+        if (!isInitialized)
         {
             Console.WriteLine("TradingPage: ERROR - Fluxor failed to initialize in time!");
             return;
