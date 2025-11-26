@@ -135,7 +135,7 @@
                         </MudAlert>
                     }
 
-                    @if (TradingState.Value.LastExecutedOrder != null)
+                    @if (TradingState.Value.LastExecutedOrder != null && TradingState.Value.LastExecutedOrder.OrderId != _lastShownOrderId)
                     {
                         <MudAlert Severity="Severity.Success" Class="mb-3">
                             ✓ Order executed successfully! Order ID: @TradingState.Value.LastExecutedOrder.OrderId.ToString()[..8]...
@@ -168,19 +168,13 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-
         Console.WriteLine("TradingPage: OnInitializedAsync started");
-
-        // Wait for Fluxor Store to initialize
-
+        _lastShownOrderId = TradingState.Value.LastExecutedOrder?.OrderId;
         try
-
         {
-
             Console.WriteLine("TradingPage: Waiting for Fluxor to initialize...");
 
             await Store.InitializeAsync();
-
 
             Console.WriteLine("TradingPage: Fluxor is ready!");
             Console.WriteLine($"TradingPage: Dispatching LoadAccountAction for {_accountId}");
@@ -189,20 +183,12 @@
             // Fetch stock price
             Console.WriteLine("TradingPage: Dispatching FetchStockPriceAction for AAPL");
             Dispatcher.Dispatch(new FetchStockPriceAction("AAPL"));
-
         }
-
         catch (Exception ex)
-
         {
-
             Console.WriteLine($"TradingPage: ERROR - Fluxor initialization failed: {ex.Message}");
-
             return;
-
         }
-
-
         Console.WriteLine("TradingPage: OnInitializedAsync completed");
     }
 
@@ -256,7 +242,6 @@
 
     protected override void OnAfterRender(bool firstRender)
     {
-        // Show result popups driven by state changes (sync in render cycle)
         var last = TradingState.Value.LastExecutedOrder;
         if (last != null && last.OrderId != _lastShownOrderId)
         {
