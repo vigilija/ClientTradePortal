@@ -7,6 +7,7 @@
 @inject IState<AccountState> AccountState
 @inject IState<TradingState> TradingState
 @inject IDispatcher Dispatcher
+@inject IStore Store
 
 <PageTitle>Trade </PageTitle>
 
@@ -168,13 +169,38 @@
 
         Console.WriteLine("TradingPage: OnInitializedAsync started");
         
-        // Load account data
-        Console.WriteLine($"TradingPage: Dispatching LoadAccountAction for {_accountId}");
-        Dispatcher.Dispatch(new LoadAccountAction(_accountId));
-        
-        // Fetch stock price
-        Console.WriteLine("TradingPage: Dispatching FetchStockPriceAction for AAPL");
-        Dispatcher.Dispatch(new FetchStockPriceAction("AAPL"));
+        // Wait for Fluxor Store to initialize
+
+        try
+
+        {
+
+            Console.WriteLine("TradingPage: Waiting for Fluxor to initialize...");
+
+            await Store.InitializeAsync();
+
+
+            Console.WriteLine("TradingPage: Fluxor is ready!");
+            Console.WriteLine($"TradingPage: Dispatching LoadAccountAction for {_accountId}");
+
+            Dispatcher.Dispatch(new LoadAccountAction(_accountId));
+            // Fetch stock price
+            Console.WriteLine("TradingPage: Dispatching FetchStockPriceAction for AAPL");
+            Dispatcher.Dispatch(new FetchStockPriceAction("AAPL"));
+
+        }
+
+        catch (Exception ex)
+
+        {
+
+            Console.WriteLine($"TradingPage: ERROR - Fluxor initialization failed: {ex.Message}");
+
+            return;
+
+        }
+
+        // Now dispatch actions - Fluxor is guaranteed ready
 
         Console.WriteLine("TradingPage: OnInitializedAsync completed");
     }
