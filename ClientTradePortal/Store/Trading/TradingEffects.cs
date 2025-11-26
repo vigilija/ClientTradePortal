@@ -5,15 +5,18 @@ public class TradingEffects
     private readonly ITradingService _tradingService;
     private readonly ILogger<TradingEffects> _logger;
     private readonly IState<TradingState> _tradingState;
+    private readonly IMemoryCache _cache;
 
     public TradingEffects(
         ITradingService tradingService,
         ILogger<TradingEffects> logger,
-        IState<TradingState> tradingState)
+        IState<TradingState> tradingState,
+        IMemoryCache cache)
     {
         _tradingService = tradingService;
         _logger = logger;
         _tradingState = tradingState;
+        _cache = cache;
     }
 
     [EffectMethod]
@@ -85,10 +88,12 @@ public class TradingEffects
 
             dispatcher.Dispatch(new ExecuteOrderSuccessAction(result));
 
-            // Reload account data
-            dispatcher.Dispatch(new LoadAccountAction(action.AccountId));
+            _cache.Remove($"account_{action.AccountId}");
 
-            // Reload order history
+            _cache.Remove($"positions_{action.AccountId}");
+            _cache.Remove($"stock_price_{state.CurrentOrderRequest.Symbol}");
+
+            dispatcher.Dispatch(new LoadAccountAction(action.AccountId));
             dispatcher.Dispatch(new LoadOrderHistoryAction(action.AccountId));
         }
         catch (Exception ex)
