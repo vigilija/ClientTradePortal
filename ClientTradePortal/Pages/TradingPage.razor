@@ -7,6 +7,7 @@
 @inject IState<AccountState> AccountState
 @inject IState<TradingState> TradingState
 @inject IDispatcher Dispatcher
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
 
 <PageTitle>Trade </PageTitle>
 
@@ -167,11 +168,26 @@
         await base.OnInitializedAsync();
 
         Console.WriteLine("TradingPage: OnInitializedAsync started");
-        
-        // Load account data
+
+        // Try to restore from localStorage (works immediately, even if Fluxor effects aren't ready)
+        try
+        {
+            var cachedAccount = await LocalStorage.GetItemAsync<AccountResponse>("AccountState_CurrentAccount");
+            if (cachedAccount != null)
+            {
+                Console.WriteLine($"TradingPage: Restored from localStorage - Balance: {cachedAccount.CashBalance}");
+                Dispatcher.Dispatch(new LoadAccountSuccessAction(cachedAccount));
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"TradingPage: localStorage restore failed: {ex.Message}");
+        }
+
+        // Load fresh account data (will also save to localStorage when effect triggers)
         Console.WriteLine($"TradingPage: Dispatching LoadAccountAction for {_accountId}");
         Dispatcher.Dispatch(new LoadAccountAction(_accountId));
-        
+
         // Fetch stock price
         Console.WriteLine("TradingPage: Dispatching FetchStockPriceAction for AAPL");
         Dispatcher.Dispatch(new FetchStockPriceAction("AAPL"));
