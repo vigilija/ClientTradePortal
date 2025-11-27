@@ -102,13 +102,13 @@
                         Variant="Variant.Outlined"
                         Class="mb-3" />
 
-                    <MudNumericField 
-                        Value="@TradingState.Value.CurrentOrderRequest.Quantity"
-                        ValueChanged="@((int newValue) => Dispatcher.Dispatch(new UpdateOrderQuantityAction(newValue)))"
+                    <MudNumericField T="int"
+                        Value="TradingState.Value.CurrentOrderRequest.Quantity"
+                        ValueChanged="OnQuantityChanged"
                         Label="Number of Shares"
                         Variant="Variant.Outlined"
                         Min="1"
-                        Max="10000"
+                        Max="10000" 
                         Class="mb-3" />
 
                     <MudTextField 
@@ -160,7 +160,6 @@
 
 @code {
     private MudForm? _form;
-    // private int _quantity = 1;
     private string _stockSymbol = "AAPL";
     private Guid _accountId = Guid.Parse("11111111-1111-1111-1111-111111111111");
     private Guid? _lastShownOrderId;
@@ -173,14 +172,11 @@
         try
         {
             Console.WriteLine("TradingPage: Waiting for Fluxor to initialize...");
-
             await Store.InitializeAsync();
 
-            Console.WriteLine("TradingPage: Fluxor is ready!");
-            Console.WriteLine($"TradingPage: Dispatching LoadAccountAction for {_accountId}");
-
+            Console.WriteLine($"TradingPage:Fluxor is ready! Dispatching LoadAccountAction for {_accountId}");
             Dispatcher.Dispatch(new LoadAccountAction(_accountId));
-            // Fetch stock price
+
             Console.WriteLine("TradingPage: Dispatching FetchStockPriceAction for AAPL");
             Dispatcher.Dispatch(new FetchStockPriceAction("AAPL"));
         }
@@ -213,10 +209,8 @@
             return;
         }
 
-
         Dispatcher.Dispatch(new UpdateOrderSymbolAction(_stockSymbol));
         Dispatcher.Dispatch(new ExecuteOrderAction(_accountId));
-
     }
 
     private bool CanPlaceOrder()
@@ -239,6 +233,7 @@
     {
         return $"€{amount:N2}";
     }
+    private void OnQuantityChanged(int newValue) => Dispatcher.Dispatch(new UpdateOrderQuantityAction(newValue));
 
     protected override void OnAfterRender(bool firstRender)
     {
@@ -251,7 +246,6 @@
             else
                 Snackbar.Add($"Order executed: {last.OrderId.ToString()[..8]}... Qty {last.Quantity} Total {FormatCurrency(last.TotalAmount)}", Severity.Success);
         }
-
         base.OnAfterRender(firstRender);
     }
 }
