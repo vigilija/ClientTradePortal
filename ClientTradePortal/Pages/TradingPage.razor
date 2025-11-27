@@ -1,7 +1,7 @@
 ﻿@page "/trade"
 @using Fluxor
 @using ClientTradePortal.Store.Account
-<Component />@using MudBlazor
+@using MudBlazor
 @inherits Fluxor.Blazor.Web.Components.FluxorComponent
 
 @inject IState<AccountState> AccountState
@@ -105,10 +105,11 @@
                     <MudNumericField T="int"
                         Value="TradingState.Value.CurrentOrderRequest.Quantity"
                         ValueChanged="OnQuantityChanged"
+                        Immediate="true"
                         Label="Number of Shares"
                         Variant="Variant.Outlined"
-                        Min="1"
-                        Max="10000" 
+                        Max="10000"
+                        Min=0
                         Class="mb-3" />
 
                     <MudTextField 
@@ -219,6 +220,7 @@
         if (TradingState.Value.CurrentOrderRequest.Quantity <= 0) return false;
         if (!TradingState.Value.CurrentStockPrice.HasValue) return false;
         if (AccountState.Value.CurrentAccount == null) return false;
+        if (TradingState.Value.CurrentOrderRequest.Quantity < 1) return false;
 
         var totalAmount = CalculateTotalAmount();
         return AccountState.Value.CurrentAccount.CashBalance >= totalAmount;
@@ -226,6 +228,7 @@
 
     private decimal CalculateTotalAmount()
     {
+        if (TradingState.Value.CurrentOrderRequest.Quantity < 1) return 0;
         return (TradingState.Value.CurrentStockPrice ?? 0) * TradingState.Value.CurrentOrderRequest.Quantity;
     }
 
@@ -233,6 +236,7 @@
     {
         return $"€{amount:N2}";
     }
+
     private void OnQuantityChanged(int newValue) => Dispatcher.Dispatch(new UpdateOrderQuantityAction(newValue));
 
     protected override void OnAfterRender(bool firstRender)
